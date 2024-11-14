@@ -8,6 +8,28 @@ import cv2
 import matplotlib.pyplot as plt
 
 
+def get_pil_frames(video_path, num_frames=15):
+    cap = cv2.VideoCapture(video_path)
+    frames = []
+    frame_count = 0
+
+    while frame_count < num_frames:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(Image.fromarray(frame))
+        frame_count += 1
+
+    cap.release()
+
+    if len(frames) < num_frames:
+        raise ValueError(f"Video contains fewer than {num_frames} frames.")
+
+    return frames
+
+
 class VisualFeatureExtractor(nn.Module):
     def __init__(self, feature_dim=300):
         super(VisualFeatureExtractor, self).__init__()
@@ -100,28 +122,6 @@ class VideoFeatureExtractor(nn.Module):
 
         final_embedding = torch.cat((scene_embeddings, face_embeddings), dim=0)
         return final_embedding
-
-
-def get_pil_frames(video_path, num_frames=15, device='cpu'):
-    cap = cv2.VideoCapture(video_path)
-    frames = []
-    frame_count = 0
-
-    while frame_count < num_frames:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frames.append(Image.fromarray(frame))
-        frame_count += 1
-
-    cap.release()
-
-    if len(frames) < num_frames:
-        raise ValueError(f"Video contains fewer than {num_frames} frames.")
-
-    return frames
 
 
 def display_frame(frame):
